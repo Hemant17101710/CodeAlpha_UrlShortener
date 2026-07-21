@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>URL Shortener - CodeAlpha</title>
+<style>
+    * { box-sizing: border-box; }
+    body {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+    .card {
+        background: #fff;
+        padding: 40px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        width: 100%;
+        max-width: 500px;
+    }
+    h1 {
+        margin-top: 0;
+        color: #333;
+        font-size: 24px;
+        text-align: center;
+    }
+    .subtitle {
+        text-align: center;
+        color: #888;
+        margin-bottom: 25px;
+        font-size: 14px;
+    }
+    input[type="text"] {
+        width: 100%;
+        padding: 12px 14px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 15px;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+    input[type="text"]:focus {
+        border-color: #764ba2;
+    }
+    button {
+        width: 100%;
+        padding: 12px;
+        margin-top: 12px;
+        background: #764ba2;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    button:hover { background: #5f3a85; }
+    #result {
+        margin-top: 20px;
+        padding: 15px;
+        background: #f5f3fa;
+        border-radius: 8px;
+        display: none;
+        word-break: break-all;
+    }
+    #result a {
+        color: #764ba2;
+        font-weight: 600;
+        text-decoration: none;
+    }
+    #result a:hover { text-decoration: underline; }
+    #error {
+        margin-top: 15px;
+        color: #d33;
+        font-size: 14px;
+        display: none;
+    }
+    .copy-btn {
+        margin-top: 10px;
+        background: #333;
+        font-size: 13px;
+        padding: 8px;
+    }
+</style>
+</head>
+<body>
+    <div class="card">
+        <h1>🔗 URL Shortener</h1>
+        <p class="subtitle">CodeAlpha Backend Development — Task 1</p>
+
+        <input type="text" id="urlInput" placeholder="Paste your long URL here (https://...)">
+        <button onclick="shortenUrl()">Shorten URL</button>
+
+        <div id="error"></div>
+
+        <div id="result">
+            <div>Short URL:</div>
+            <a id="shortLink" href="#" target="_blank"></a>
+            <button class="copy-btn" onclick="copyLink()">Copy Link</button>
+        </div>
+    </div>
+
+<script>
+async function shortenUrl() {
+    const urlInput = document.getElementById('urlInput');
+    const resultDiv = document.getElementById('result');
+    const errorDiv = document.getElementById('error');
+    const shortLink = document.getElementById('shortLink');
+
+    resultDiv.style.display = 'none';
+    errorDiv.style.display = 'none';
+
+    const url = urlInput.value.trim();
+    if (!url) {
+        errorDiv.textContent = 'Please enter a URL.';
+        errorDiv.style.display = 'block';
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/shorten', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: url })
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+            errorDiv.textContent = data.error || 'Something went wrong.';
+            errorDiv.style.display = 'block';
+            return;
+        }
+
+        shortLink.href = data.short_url;
+        shortLink.textContent = data.short_url;
+        resultDiv.style.display = 'block';
+    } catch (err) {
+        errorDiv.textContent = 'Failed to connect to server.';
+        errorDiv.style.display = 'block';
+    }
+}
+
+function copyLink() {
+    const shortLink = document.getElementById('shortLink');
+    navigator.clipboard.writeText(shortLink.href);
+    alert('Copied to clipboard!');
+}
+</script>
+</body>
+</html>
